@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const _ = require('lodash');
+require("dotenv").config();
 
 const app = express();
 
@@ -10,7 +11,9 @@ app.use(express.static("public"));
 
 app.set("view engine", "ejs");
 
-mongoose.connect("mongodb://localhost:27017/demo", {useNewUrlParser:true, useUnifiedTopology:true,useFindAndModify: false});
+const mongo_uri = "mongodb+srv://" + process.env.MONGO_USERNAME + ":" + process.env.MONGO_PASSWORD + "@" + process.env.MONGO_CLUSTER + "/todoListDB";
+
+mongoose.connect(mongo_uri, {useNewUrlParser:true, useUnifiedTopology:true,useFindAndModify: false});
 
 
 
@@ -86,7 +89,6 @@ app.get("/:customList" , (req,res)=> {
 })
 
 app.post("/" , (req,res)=>{
-    console.log(req.body);
     const newItem = req.body.newItem;
     const listTitle = req.body.listTitle;
     const item = new Item ({
@@ -115,7 +117,6 @@ app.post("/delete",(req,res)=>{
   if (listTitle === "Today") {
     Item.deleteOne({_id: itemCheckedID}, err=> {
       if(!err){
-        console.log("deletion successful"); 
         res.redirect("/");
        } 
     })
@@ -123,7 +124,6 @@ app.post("/delete",(req,res)=>{
     List.findOneAndUpdate({name: listTitle}, {
       $pull: {items: {_id: itemCheckedID}}}, (err,results) => {
         if(!err) {
-          console.log(results);
           res.redirect("/" + listTitle);
         }
       });
